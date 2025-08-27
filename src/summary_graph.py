@@ -46,8 +46,8 @@ def generate_query(state: SummaryState, config: RunnableConfig):
 
     llm_json_mode = ChatOpenAI(
         base_url=configurable.base_url,
-        model=configurable.local_llm,
-        api_key=SecretStr("None"),
+        model=configurable.llm_model,
+        api_key=SecretStr(configurable.api_key or "None"),
         temperature=0
     )
     llm_json_mode.with_structured_output(method="json_mode")
@@ -125,8 +125,8 @@ def summarize_sources(state: SummaryState, config: RunnableConfig):
     # Default to Ollama
     llm = ChatOpenAI(
         base_url=configurable.base_url,
-        model=configurable.local_llm,
-        api_key=SecretStr("None"),
+        model=configurable.llm_model,
+        api_key=SecretStr(configurable.api_key or "None"),
         temperature=0
     )
     #llm.with_structured_output(method="json_mode")
@@ -150,8 +150,8 @@ def reflect_on_summary(state: SummaryState, config: RunnableConfig):
     # Default to Ollama
     llm_json_mode = ChatOpenAI(
         base_url=configurable.base_url,
-        model=configurable.local_llm,
-        api_key=SecretStr("None"),
+        model=configurable.llm_model,
+        api_key=SecretStr(configurable.api_key or "None"),
         temperature=0
     )
     llm_json_mode.with_structured_output(method="json_mode")
@@ -202,8 +202,8 @@ def edit_summary(state: SummaryState, config: RunnableConfig):
 
     llm_json_mode = ChatOpenAI(
         base_url=configurable.base_url,
-        model=configurable.local_llm,
-        api_key=SecretStr("None"),
+        model=configurable.llm_model,
+        api_key=SecretStr(configurable.api_key or "None"),
         temperature=0
     )
 

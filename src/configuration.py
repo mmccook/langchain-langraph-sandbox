@@ -42,11 +42,13 @@ def _field_names(cls) -> Iterable[str]:
     # Fallback to explicitly listing known fields
     return (
         "max_web_research_loops",
-        "local_llm",
+        "llm_model",
         "llm_provider",
         "search_api",
         "fetch_full_page",
         "base_url",
+        "api_key",
+        "api_key",
         "strip_thinking_tokens",
     )
 
@@ -59,7 +61,7 @@ class Configuration(BaseModel):
         title="Research Depth",
         description="Number of research iterations to perform",
     )
-    local_llm: str = Field(
+    llm_model: str = Field(
         # Remove trailing space and use a sensible default name
         default="qwen/qwen3-8b",
         title="LLM Model Name",
@@ -85,6 +87,16 @@ class Configuration(BaseModel):
         title="Base URL",
         description="Base URL for API",
     )
+    api_key: Optional[str] = Field(
+        default=None,
+        title="API Key",
+        description="API key for official OpenAI API; leave empty for local/self-hosted endpoints",
+    )
+    api_key: Optional[str] = Field(
+        default=None,
+        title="API Key",
+        description="API key for official OpenAI API; leave empty for local/self-hosted endpoints",
+    )
     strip_thinking_tokens: bool = Field(
         default=True,
         title="Strip Thinking Tokens",
@@ -97,11 +109,13 @@ class Configuration(BaseModel):
             name: None
             for name in (
                 "max_web_research_loops",
-                "local_llm",
+                "llm_model",
                 "llm_provider",
                 "search_api",
                 "fetch_full_page",
                 "base_url",
+                "api_key",
+                "api_key",
                 "strip_thinking_tokens",
             )
         }
@@ -114,9 +128,22 @@ class Configuration(BaseModel):
         """
         source = source or {}
         values: Dict[str, Any] = {}
+
+        # Environment variable aliases for specific fields
+        env_aliases: Dict[str, Iterable[str]] = {
+            "api_key": ("OPENAI_API_KEY", "API_KEY"),
+        }
+
         for name in _field_names(cls):
-            env_key = name.upper()
-            env_val = os.environ.get(env_key)
+            # Build a list of env var candidates: canonical + any aliases
+            candidates = [name.upper()]
+            if name in env_aliases:
+                candidates.extend(env_aliases[name])
+            env_val = None
+            for key in candidates:
+                env_val = os.environ.get(key)
+                if env_val is not None:
+                    break
             val = env_val if env_val is not None else source.get(name)
             if val is not None:
                 values[name] = val
